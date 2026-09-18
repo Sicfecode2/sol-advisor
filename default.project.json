@@ -11,7 +11,7 @@
     "Workspace": {
       "$className": "Workspace",
       "NeonCourierMap": {
-        "$path": "src/world"
+      "$path": "src/world/NeonCourierMap.model.json"
       }
     },
     "ServerScriptService": {

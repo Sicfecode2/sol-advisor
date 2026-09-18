@@ -1,0 +1,23 @@
+{
+  "ClassName": "Model",
+  "Name": "NeonCourierMap",
+  "Children": [
+    {"ClassName":"Part","Name":"Arena","Properties":{"Anchored":true,"Size":[180,2,120],"Position":[0,-1,0],"Color":[11,17,34],"Material":"Slate"}},
+    {"ClassName":"Part","Name":"NorthWall","Properties":{"Anchored":true,"Size":[180,24,2],"Position":[0,11,-60],"Color":[23,37,66],"Material":"Neon"}},
+    {"ClassName":"Part","Name":"SouthWall","Properties":{"Anchored":true,"Size":[180,24,2],"Position":[0,11,60],"Color":[23,37,66],"Material":"Neon"}},
+    {"ClassName":"Part","Name":"WestWall","Properties":{"Anchored":true,"Size":[2,24,120],"Position":[-90,11,0],"Color":[23,37,66],"Material":"Neon"}},
+    {"ClassName":"Part","Name":"EastWall","Properties":{"Anchored":true,"Size":[2,24,120],"Position":[90,11,0],"Color":[23,37,66],"Material":"Neon"}},
+    {"ClassName":"Part","Name":"Reactor","Properties":{"Anchored":true,"Size":[20,8,20],"Position":[0,4,0],"Color":[255,65,180],"Material":"Neon"}},
+    {"ClassName":"Part","Name":"SpawnPlatform","Properties":{"Anchored":true,"Size":[12,1,12],"Position":[0,1,35],"Color":[75,230,255],"Material":"Neon"}},
+    {"ClassName":"Part","Name":"EnergyCore1","Properties":{"Anchored":true,"Shape":"Ball","Size":[3,3,3],"Position":[50,3,22],"Color":[255,218,72],"Material":"Neon","CanCollide":false}},
+    {"ClassName":"Part","Name":"EnergyCore2","Properties":{"Anchored":true,"Shape":"Ball","Size":[3,3,3],"Position":[19,3,36],"Color":[255,218,72],"Material":"Neon","CanCollide":false}},
+    {"ClassName":"Part","Name":"EnergyCore3","Properties":{"Anchored":true,"Shape":"Ball","Size":[3,3,3],"Position":[-19,3,36],"Color":[255,218,72],"Material":"Neon","CanCollide":false}},
+    {"ClassName":"Part","Name":"EnergyCore4","Properties":{"Anchored":true,"Shape":"Ball","Size":[3,3,3],"Position":[-50,3,22],"Color":[255,218,72],"Material":"Neon","CanCollide":false}},
+    {"ClassName":"Part","Name":"EnergyCore5","Properties":{"Anchored":true,"Shape":"Ball","Size":[3,3,3],"Position":[-62,3,0],"Color":[255,218,72],"Material":"Neon","CanCollide":false}},
+    {"ClassName":"Part","Name":"EnergyCore6","Properties":{"Anchored":true,"Shape":"Ball","Size":[3,3,3],"Position":[-50,3,-22],"Color":[255,218,72],"Material":"Neon","CanCollide":false}},
+    {"ClassName":"Part","Name":"EnergyCore7","Properties":{"Anchored":true,"Shape":"Ball","Size":[3,3,3],"Position":[-19,3,-36],"Color":[255,218,72],"Material":"Neon","CanCollide":false}},
+    {"ClassName":"Part","Name":"EnergyCore8","Properties":{"Anchored":true,"Shape":"Ball","Size":[3,3,3],"Position":[19,3,-36],"Color":[255,218,72],"Material":"Neon","CanCollide":false}},
+    {"ClassName":"Part","Name":"EnergyCore9","Properties":{"Anchored":true,"Shape":"Ball","Size":[3,3,3],"Position":[50,3,-22],"Color":[255,218,72],"Material":"Neon","CanCollide":false}},
+    {"ClassName":"Part","Name":"EnergyCore10","Properties":{"Anchored":true,"Shape":"Ball","Size":[3,3,3],"Position":[62,3,0],"Color":[255,218,72],"Material":"Neon","CanCollide":false}}
+  ]
+}
