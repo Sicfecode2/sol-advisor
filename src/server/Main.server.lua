@@ -46,9 +46,12 @@ local function createPart(name, size, position, color, material)
 end
 
 local function buildMap()
-	local map = Instance.new("Folder")
-	map.Name = "NeonCourierMap"
-	map.Parent = workspace
+	local map = workspace:FindFirstChild("NeonCourierMap")
+	if not map then
+		map = Instance.new("Folder")
+		map.Name = "NeonCourierMap"
+		map.Parent = workspace
+	end
 
 	createPart("Arena", Vector3.new(180, 2, 120), Vector3.new(0, -1, 0), Color3.fromRGB(11, 17, 34), Enum.Material.Slate).Parent = map
 	createPart("NorthWall", Vector3.new(180, 24, 2), Vector3.new(0, 11, -60), Color3.fromRGB(23, 37, 66), Enum.Material.Neon).Parent = map

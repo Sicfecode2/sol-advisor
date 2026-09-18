@@ -8,6 +8,12 @@
         "$path": "src/shared"
       }
     },
+    "Workspace": {
+      "$className": "Workspace",
+      "NeonCourierMap": {
+        "$path": "src/world"
+      }
+    },
     "ServerScriptService": {
       "$className": "ServerScriptService",
       "Server": {
