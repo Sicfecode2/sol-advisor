@@ -20,9 +20,16 @@ toastEvent.Parent = remotes
 
 local profiles = {}
 local roundEndsAt = 0
-local activeRound = 0
 local roundScores = {}
 local coreParts = {}
+
+local function reportStartup(message)
+	warn("Neon Courier: " .. message)
+	local marker = Instance.new("StringValue")
+	marker.Name = "NeonCourierStartupError"
+	marker.Value = message
+	marker.Parent = ReplicatedStorage
+end
 
 local function createPart(name, size, position, color, material)
 	local part = Instance.new("Part")
@@ -145,7 +152,6 @@ local function saveProfile(player)
 end
 
 local function beginRound()
-	activeRound += 1
 	roundScores = {}
 	roundEndsAt = os.time() + Config.RoundSeconds
 	for player, profile in pairs(profiles) do
@@ -157,8 +163,12 @@ local function beginRound()
 	end
 end
 
-buildMap()
-beginRound()
+local buildSuccess, buildError = pcall(buildMap)
+if not buildSuccess then
+	reportStartup("Map build failed: " .. tostring(buildError))
+else
+	beginRound()
+end
 
 Players.PlayerAdded:Connect(function(player)
 	local profile = safeProfile(player)

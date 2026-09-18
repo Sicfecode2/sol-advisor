@@ -8,6 +8,7 @@ local Config = require(ReplicatedStorage.Shared.GameConfig)
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local stateEvent = remotes:WaitForChild("StateChanged")
 local toastEvent = remotes:WaitForChild("Toast")
+local startupError = ReplicatedStorage:FindFirstChild("NeonCourierStartupError")
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "NeonCourierHUD"
@@ -85,6 +86,11 @@ toast.Parent = gui
 Instance.new("UICorner", toast).CornerRadius = UDim.new(0, 12)
 
 local roundEndsAt = 0
+
+if startupError then
+	stats.Text = "SERVER ERROR\n" .. startupError.Value
+	stats.TextColor3 = Color3.fromRGB(255, 120, 120)
+end
 
 stateEvent.OnClientEvent:Connect(function(profile, endsAt)
 	roundEndsAt = endsAt or roundEndsAt
