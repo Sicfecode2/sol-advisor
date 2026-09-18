@@ -1,189 +1,222 @@
 local map = script.Parent
 local CollectionService = game:GetService("CollectionService")
 
-local function part(name, size, position, color, material)
+-- The hub is deliberately built from a small vocabulary of anchored primitives.  This
+-- keeps the silhouette strong on mobile while leaving all gameplay landmarks editable.
+local function part(parent, name, size, position, color, material, shape)
 	local value = Instance.new("Part")
 	value.Name = name
 	value.Size = size
 	value.Position = position
-	value.Anchored = true
 	value.Color = color
-	value.Material = material
+	value.Material = material or Enum.Material.SmoothPlastic
+	value.Anchored = true
 	value.TopSurface = Enum.SurfaceType.Smooth
 	value.BottomSurface = Enum.SurfaceType.Smooth
-	value.Parent = map
+	value.Shape = shape or Enum.PartType.Block
+	value.Parent = parent or map
 	return value
 end
 
-local dark = Color3.fromRGB(11, 17, 34)
-local blue = Color3.fromRGB(23, 37, 66)
-local cyan = Color3.fromRGB(75, 230, 255)
-local pink = Color3.fromRGB(255, 65, 180)
-local purple = Color3.fromRGB(119, 76, 255)
-local gold = Color3.fromRGB(255, 190, 65)
-local black = Color3.fromRGB(5, 8, 20)
-
-local function folder(name)
-	local value = map:FindFirstChild(name)
-	if not value then
-		value = Instance.new("Folder")
-		value.Name = name
-		value.Parent = map
-	end
-	return value
-end
-
-local bubbleRegions = folder("BubbleSpawnRegions")
-local portals = folder("ZonePortals")
-local vats = folder("VatLocations")
-local spawns = folder("PlayerSpawns")
-local props = folder("LowPolyProps")
-
-local function taggedPart(parent, name, size, position, color, material, tag)
-	local value = part(name, size, position, color, material)
-	value.Parent = parent
+local function tagged(parent, name, size, position, color, material, tag, shape)
+	local value = part(parent, name, size, position, color, material, shape)
 	CollectionService:AddTag(value, tag)
 	return value
 end
 
-local function zone(name, center, color, subtitle)
-	local pad = taggedPart(props, name .. "Platform", Vector3.new(34, 1, 28), center, color, Enum.Material.Slate, "ZonePlatform")
-	pad.Transparency = 0.08
-	local portal = taggedPart(portals, name .. "Portal", Vector3.new(5, 10, 2), center + Vector3.new(0, 5, 12), color, Enum.Material.Neon, "ZonePortal")
-	local light = Instance.new("PointLight")
-	light.Color = color
-	light.Range = 28
-	light.Brightness = 2
-	light.Parent = portal
-	local sign = taggedPart(props, name .. "Sign", Vector3.new(26, 5, 0.5), center + Vector3.new(0, 8, 10), Color3.fromRGB(12, 16, 34), Enum.Material.Metal, "ZoneSign")
-	local surface = Instance.new("SurfaceGui")
-	surface.Face = Enum.NormalId.Front
-	surface.AlwaysOnTop = true
-	surface.Parent = sign
+local function folder(name)
+	local value = map:FindFirstChild(name) or Instance.new("Folder")
+	value.Name = name
+	value.Parent = map
+	return value
+end
+
+local props = folder("LowPolyProps")
+local bubbleRegions = folder("BubbleSpawnRegions")
+local portals = folder("ZonePortals")
+local vats = folder("VatLocations")
+local spawns = folder("PlayerSpawns")
+
+local colors = {
+	ground = Color3.fromRGB(20, 25, 39),
+	groundEdge = Color3.fromRGB(35, 43, 62),
+	stone = Color3.fromRGB(61, 67, 86),
+	stoneLight = Color3.fromRGB(92, 98, 116),
+	metal = Color3.fromRGB(42, 48, 63),
+	ink = Color3.fromRGB(12, 15, 26),
+	cyan = Color3.fromRGB(75, 210, 232),
+	mint = Color3.fromRGB(91, 206, 154),
+	gold = Color3.fromRGB(244, 183, 69),
+	pink = Color3.fromRGB(235, 82, 157),
+	purple = Color3.fromRGB(131, 96, 220),
+	orange = Color3.fromRGB(224, 126, 64),
+}
+
+local function light(parent, color, range, brightness)
+	local value = Instance.new("PointLight")
+	value.Color = color
+	value.Range = range
+	value.Brightness = brightness
+	value.Shadows = true
+	value.Parent = parent
+	return value
+end
+
+local function sign(name, position, size, text, accent, facing)
+	local board = part(props, name, size, position, colors.ink, Enum.Material.Metal)
+	local gui = Instance.new("SurfaceGui")
+	gui.Face = facing or Enum.NormalId.Front
+	gui.AlwaysOnTop = true
+	gui.LightInfluence = 0
+	gui.Parent = board
 	local label = Instance.new("TextLabel")
-	label.Size = UDim2.fromScale(1, 1)
+	label.Size = UDim2.fromScale(0.94, 0.88)
+	label.Position = UDim2.fromScale(0.03, 0.06)
 	label.BackgroundTransparency = 1
-	label.Text = name:upper() .. "\n" .. subtitle
-	label.TextColor3 = color
+	label.Text = text
+	label.TextColor3 = accent
 	label.TextScaled = true
 	label.Font = Enum.Font.GothamBlack
-	label.Parent = surface
-	local region = taggedPart(bubbleRegions, name .. "BubbleField", Vector3.new(28, 0.3, 20), center + Vector3.new(0, 1, -4), color, Enum.Material.Neon, "BubbleSpawnRegion")
-	region.Transparency = 0.82
+	label.TextWrapped = true
+	label.Parent = gui
+	return board
+end
+
+-- A contained arena and a few tall silhouettes make the spawn camera read the space.
+part(nil, "Arena", Vector3.new(180, 2, 120), Vector3.new(0, -1, 0), colors.ground, Enum.Material.Slate)
+part(nil, "NorthWall", Vector3.new(180, 24, 2), Vector3.new(0, 11, -60), colors.groundEdge, Enum.Material.Concrete)
+part(nil, "SouthWall", Vector3.new(180, 24, 2), Vector3.new(0, 11, 60), colors.groundEdge, Enum.Material.Concrete)
+part(nil, "WestWall", Vector3.new(2, 24, 120), Vector3.new(-90, 11, 0), colors.groundEdge, Enum.Material.Concrete)
+part(nil, "EastWall", Vector3.new(2, 24, 120), Vector3.new(90, 11, 0), colors.groundEdge, Enum.Material.Concrete)
+
+-- Raised circular plaza: two broad tiers and a dark inset floor give the vat a real footing.
+part(props, "HubFoundation", Vector3.new(62, 3, 48), Vector3.new(0, 2, 0), colors.stone, Enum.Material.Slate)
+part(props, "HubRoundTier", Vector3.new(56, 4, 56), Vector3.new(0, 4, 0), colors.stone, Enum.Material.Slate, Enum.PartType.Cylinder)
+part(props, "HubRoundTrim", Vector3.new(48, 1, 48), Vector3.new(0, 6.5, 0), colors.stoneLight, Enum.Material.Concrete, Enum.PartType.Cylinder)
+part(props, "HubFloor", Vector3.new(42, 0.8, 42), Vector3.new(0, 7.2, 0), colors.ink, Enum.Material.Metal, Enum.PartType.Cylinder)
+for _, item in ipairs({
+	{"HubStepNorth", Vector3.new(30, 1, 5), Vector3.new(0, 6, -25)},
+	{"HubStepSouth", Vector3.new(30, 1, 5), Vector3.new(0, 6, 25)},
+	{"HubStepWest", Vector3.new(5, 1, 22), Vector3.new(-25, 6, 0)},
+	{"HubStepEast", Vector3.new(5, 1, 22), Vector3.new(25, 6, 0)},
+}) do
+	part(props, item[1], item[2], item[3], colors.stoneLight, Enum.Material.Concrete)
+end
+
+-- Paths are inset stone ribbons rather than a glowing grid.
+for _, item in ipairs({
+	{"GaragePath", Vector3.new(68, 0.5, 7), Vector3.new(-47, 5.5, 0), colors.orange},
+	{"ForestPath", Vector3.new(68, 0.5, 7), Vector3.new(47, 5.5, 0), colors.cyan},
+	{"SwampPath", Vector3.new(7, 0.5, 64), Vector3.new(0, 5.5, -45), colors.mint},
+	{"LagoonPath", Vector3.new(7, 0.5, 64), Vector3.new(0, 5.5, 45), colors.cyan},
+}) do
+	tagged(props, item[1], item[2], item[3], colors.groundEdge, Enum.Material.Concrete, "ZonePath")
+	local markerSize = item[2].X > item[2].Z and Vector3.new(2, 0.12, 4) or Vector3.new(4, 0.12, 2)
+	for offset = -1, 1 do
+		part(props, item[1] .. "Marker" .. offset, markerSize, item[3] + Vector3.new(item[2].X > item[2].Z and offset * 23 or 0, 0.32, item[2].X > item[2].Z and 0 or offset * 23), item[4], Enum.Material.SmoothPlastic)
+	end
+end
+
+-- The central vat is intentionally layered: pedestal, bowl, thick rim, liquid, bubbles and pipes.
+part(props, "VatPedestal", Vector3.new(20, 2, 20), Vector3.new(0, 8.4, 0), colors.metal, Enum.Material.Metal, Enum.PartType.Cylinder)
+part(nil, "Reactor", Vector3.new(17, 6, 17), Vector3.new(0, 12, 0), colors.pink, Enum.Material.SmoothPlastic, Enum.PartType.Cylinder)
+part(props, "VatRim", Vector3.new(20, 1.4, 20), Vector3.new(0, 15.1, 0), colors.gold, Enum.Material.Metal, Enum.PartType.Cylinder)
+local liquid = part(props, "VatLiquid", Vector3.new(16, 0.35, 16), Vector3.new(0, 15.85, 0), colors.pink, Enum.Material.Neon, Enum.PartType.Cylinder)
+light(liquid, colors.pink, 18, 1.2)
+tagged(vats, "CentralJuiceVatLocation", Vector3.new(8, 0.25, 8), Vector3.new(0, 16, 0), colors.pink, Enum.Material.SmoothPlastic, "VatLocation")
+for index, position in ipairs({
+	Vector3.new(-4, 16.5, -2), Vector3.new(3, 16.6, 2), Vector3.new(0, 17.2, -4),
+	Vector3.new(5, 16.4, -4), Vector3.new(-2, 16.7, 4),
+}) do
+	local bubble = part(props, "VatBubble" .. index, Vector3.new(1.4, 1.4, 1.4), position, colors.gold, Enum.Material.Neon, Enum.PartType.Ball)
+	bubble.CanCollide = false
+end
+for _, x in ipairs({-9, 9}) do
+	part(props, "VatPipe" .. x, Vector3.new(2, 7, 2), Vector3.new(x, 11, 0), colors.metal, Enum.Material.Metal, Enum.PartType.Cylinder)
+	part(props, "VatPipeCap" .. x, Vector3.new(3, 2, 3), Vector3.new(x, 14.5, 0), colors.gold, Enum.Material.Metal, Enum.PartType.Cylinder)
+end
+sign("VatSign", Vector3.new(0, 22, 11), Vector3.new(30, 6, 0.6), "JUICE VAT\nSLURP YOUR BRAIN", colors.pink)
+
+-- Readable workshop massing flanks the plaza.
+local function workshop(name, center, accent, title)
+	part(props, name .. "Body", Vector3.new(18, 10, 14), center + Vector3.new(0, 5, 0), colors.metal, Enum.Material.Metal)
+	part(props, name .. "Roof", Vector3.new(21, 2, 17), center + Vector3.new(0, 11, 0), accent, Enum.Material.Slate)
+	part(props, name .. "Door", Vector3.new(7, 7, 0.6), center + Vector3.new(0, 3.5, 7.3), colors.ink, Enum.Material.Metal)
+	part(props, name .. "DoorGlow", Vector3.new(5, 0.35, 0.3), center + Vector3.new(0, 1, 7.7), accent, Enum.Material.Neon)
+	sign(name .. "Sign", center + Vector3.new(0, 14, 7.8), Vector3.new(15, 4, 0.5), title, accent)
+end
+workshop("TurboWorkshop", Vector3.new(27, 7, -10), colors.purple, "TURBO LAB\nMORE BAG • MORE ZOOM")
+workshop("GoblinWorkshop", Vector3.new(-27, 7, -10), colors.orange, "GOBLIN GARAGE\nFIX IT WITH JUICE")
+local terminal = part(nil, "TurboTerminal", Vector3.new(7, 7, 7), Vector3.new(27, 11, -1), colors.purple, Enum.Material.SmoothPlastic)
+light(terminal, colors.purple, 14, 1.5)
+
+-- Zone portals use chunky stone posts and a single restrained luminous keystone.
+local function zone(name, center, accent, subtitle)
+	local pad = tagged(props, name .. "Platform", Vector3.new(34, 1, 28), center, colors.stone, Enum.Material.Slate, "ZonePlatform")
+	pad.Transparency = 0.04
+	local postOffset = Vector3.new(10, 7, 9)
+	for index, dx in ipairs({-1, 1}) do
+		part(portals, name .. "PortalPost" .. index, Vector3.new(4, 14, 4), center + Vector3.new(dx * postOffset.X, 7, postOffset.Z), colors.stoneLight, Enum.Material.Concrete)
+	end
+	part(portals, name .. "PortalLintel", Vector3.new(24, 4, 4), center + Vector3.new(0, 14, postOffset.Z), colors.stoneLight, Enum.Material.Concrete)
+	local keystone = tagged(portals, name .. "Portal", Vector3.new(5, 2, 2), center + Vector3.new(0, 14, postOffset.Z), accent, Enum.Material.Neon, "ZonePortal")
+	light(keystone, accent, 16, 1.2)
+	sign(name .. "Sign", center + Vector3.new(0, 19, postOffset.Z + 0.3), Vector3.new(26, 5, 0.5), name:upper() .. "\n" .. subtitle, accent)
+	local region = tagged(bubbleRegions, name .. "BubbleField", Vector3.new(28, 0.3, 20), center + Vector3.new(0, 1, -4), accent, Enum.Material.SmoothPlastic, "BubbleSpawnRegion")
+	region.Transparency = 0.88
 	region.CanCollide = false
 end
+zone("Goblin Garage", Vector3.new(-64, 2, 0), colors.orange, "FIX IT WITH JUICE")
+zone("Static Swamp", Vector3.new(0, 2, -55), colors.mint, "DO NOT LICK THE FOG")
+zone("Error Forest", Vector3.new(64, 2, 0), colors.cyan, "TREES HAVE COMMIT RIGHTS")
+zone("Lag Lagoon", Vector3.new(0, 2, 55), colors.cyan, "BUFFERING SINCE 1999")
+zone("Forbidden Server Room", Vector3.new(58, 2, -42), colors.pink, "AUTHORIZED GOBLINS ONLY")
 
--- Static landmarks stay separate from gameplay scripts so Studio designers can move them safely.
-local hub = taggedPart(props, "RaisedGoblinHub", Vector3.new(52, 3, 42), Vector3.new(0, 2, 0), purple, Enum.Material.Slate, "Hub")
-hub.Transparency = 0.1
-for _, path in ipairs({
-	{"GaragePath", Vector3.new(-42, 0.2, 0), Vector3.new(70, 0.25, 5), Color3.fromRGB(255, 150, 60)},
-	{"SwampPath", Vector3.new(0, 0.2, -42), Vector3.new(5, 0.25, 70), Color3.fromRGB(70, 220, 130)},
-	{"ForestPath", Vector3.new(42, 0.2, 0), Vector3.new(70, 0.25, 5), Color3.fromRGB(100, 180, 255)},
-	{"LagoonPath", Vector3.new(0, 0.2, 42), Vector3.new(5, 0.25, 70), Color3.fromRGB(60, 220, 255)},
-}) do
-	taggedPart(props, path[1], path[3], path[2], path[4], Enum.Material.Neon, "ZonePath")
-end
-zone("Goblin Garage", Vector3.new(-64, 2, 0), Color3.fromRGB(255, 150, 60), "FIX IT WITH JUICE")
-zone("Static Swamp", Vector3.new(0, 2, -55), Color3.fromRGB(70, 220, 130), "DO NOT LICK THE FOG")
-zone("Error Forest", Vector3.new(64, 2, 0), Color3.fromRGB(100, 180, 255), "TREES HAVE COMMIT RIGHTS")
-zone("Lag Lagoon", Vector3.new(0, 2, 55), Color3.fromRGB(60, 220, 255), "BUFFERING SINCE 1999")
-zone("Forbidden Server Room", Vector3.new(58, 2, -42), Color3.fromRGB(255, 80, 160), "AUTHORIZED GOBLINS ONLY")
-taggedPart(vats, "CentralJuiceVatLocation", Vector3.new(8, 0.25, 8), Vector3.new(0, 3.65, 0), pink, Enum.Material.Neon, "VatLocation")
-taggedPart(spawns, "MainPlayerSpawn", Vector3.new(12, 0.25, 12), Vector3.new(0, 4, 42), cyan, Enum.Material.Neon, "PlayerSpawn")
-
-for index, item in ipairs({
-	{"GarageCrate", Vector3.new(-70, 5, -8), Color3.fromRGB(255, 150, 60), Enum.PartType.Block},
-	{"SwampCrystal", Vector3.new(-8, 5, -55), Color3.fromRGB(70, 220, 130), Enum.PartType.Wedge},
-	{"ForestPine", Vector3.new(70, 6, 8), Color3.fromRGB(100, 180, 255), Enum.PartType.Cylinder},
-	{"LagBuoy", Vector3.new(8, 5, 58), Color3.fromRGB(60, 220, 255), Enum.PartType.Ball},
-	{"ServerRack", Vector3.new(58, 7, -52), Color3.fromRGB(255, 80, 160), Enum.PartType.Block},
-}) do
-	local prop = taggedPart(props, item[1], Vector3.new(6, 6, 6), item[2], item[3], Enum.Material.SmoothPlastic, "LowPolyProp")
-	prop.Shape = item[4]
-end
-
-local arena = part("Arena", Vector3.new(180, 2, 120), Vector3.new(0, -1, 0), dark, Enum.Material.SmoothPlastic)
-arena.Reflectance = 0.1
-part("NorthWall", Vector3.new(180, 24, 2), Vector3.new(0, 11, -60), blue, Enum.Material.SmoothPlastic)
-part("SouthWall", Vector3.new(180, 24, 2), Vector3.new(0, 11, 60), blue, Enum.Material.SmoothPlastic)
-part("WestWall", Vector3.new(2, 24, 120), Vector3.new(-90, 11, 0), blue, Enum.Material.SmoothPlastic)
-part("EastWall", Vector3.new(2, 24, 120), Vector3.new(90, 11, 0), blue, Enum.Material.SmoothPlastic)
-
-for x = -80, 80, 20 do
-	part("FloorGlowX" .. x, Vector3.new(1, 0.15, 112), Vector3.new(x, 0.12, 0), purple, Enum.Material.Neon)
-end
-for z = -50, 50, 20 do
-	part("FloorGlowZ" .. z, Vector3.new(164, 0.15, 1), Vector3.new(0, 0.14, z), cyan, Enum.Material.Neon)
-end
-
+-- Four corner beacons establish depth behind the central silhouette.
 for index, position in ipairs({
-	Vector3.new(-72, 8, -45), Vector3.new(72, 8, -45),
-	Vector3.new(-72, 8, 45), Vector3.new(72, 8, 45),
+	Vector3.new(-76, 10, -47), Vector3.new(76, 10, -47),
+	Vector3.new(-76, 10, 47), Vector3.new(76, 10, 47),
 }) do
-	local tower = part("Beacon" .. index, Vector3.new(5, 16, 5), position, purple, Enum.Material.Neon)
-	local light = Instance.new("PointLight")
-	light.Color = index % 2 == 0 and cyan or pink
-	light.Range = 28
-	light.Brightness = 3
-	light.Parent = tower
+	local tower = part(nil, "Beacon" .. index, Vector3.new(6, 20, 6), position, colors.stoneLight, Enum.Material.Concrete)
+	part(nil, "BeaconCap" .. index, Vector3.new(8, 1.5, 8), position + Vector3.new(0, 10.8, 0), index % 2 == 0 and colors.cyan or colors.purple, Enum.Material.Neon, Enum.PartType.Cylinder)
+	light(tower, index % 2 == 0 and colors.cyan or colors.purple, 22, 1.4)
 end
 
-local reactorPad = part("ReactorPad", Vector3.new(30, 1, 30), Vector3.new(0, 0.5, 0), black, Enum.Material.Metal)
-local reactor = part("Reactor", Vector3.new(16, 6, 16), Vector3.new(0, 5, 0), pink, Enum.Material.Neon)
-local reactorLight = Instance.new("PointLight")
-reactorLight.Color = pink
-reactorLight.Range = 35
-reactorLight.Brightness = 5
-reactorLight.Parent = reactor
-for radius = 12, 20, 4 do
-	local ring = part("ReactorRing" .. radius, Vector3.new(radius, 0.35, 1), Vector3.new(0, 1.2, 0), gold, Enum.Material.Neon)
-	ring.Shape = Enum.PartType.Cylinder
-	ring.Orientation = Vector3.new(0, 0, 90)
+local spawnPad = tagged(spawns, "MainPlayerSpawn", Vector3.new(14, 1, 14), Vector3.new(0, 8, 39), colors.cyan, Enum.Material.Metal, "PlayerSpawn")
+part(props, "SpawnInset", Vector3.new(10, 0.25, 10), Vector3.new(0, 8.65, 39), colors.cyan, Enum.Material.Neon, Enum.PartType.Cylinder)
+light(spawnPad, colors.cyan, 18, 1.4)
+sign("WelcomeSign", Vector3.new(0, 19, 50), Vector3.new(42, 8, 0.8), "GLITCH GOBLIN SIMULATOR\nABSORB  •  JUICE  •  UPGRADE", colors.cyan)
+
+-- Kept as a named landmark for the existing cave prompt in Main.server.lua.
+local gate = part(nil, "GlitchGate", Vector3.new(4, 16, 30), Vector3.new(78, 11, 0), colors.pink, Enum.Material.ForceField)
+gate.Transparency = 0.12
+sign("CaveSign", Vector3.new(75, 20, 0), Vector3.new(0.6, 8, 30), "LOCKED GLITCH CAVE\n500 JUICE TO ENTER", colors.pink, Enum.NormalId.Left)
+
+-- A few non-emissive props break up the horizon without making a grid.
+for _, item in ipairs({
+	{"GarageCrate", Vector3.new(-72, 8, -8), Vector3.new(7, 7, 7), colors.orange, Enum.PartType.Block},
+	{"SwampCrystal", Vector3.new(-8, 7, -55), Vector3.new(6, 8, 6), colors.mint, Enum.PartType.Wedge},
+	{"ForestPine", Vector3.new(70, 9, 8), Vector3.new(6, 10, 6), colors.cyan, Enum.PartType.Cylinder},
+	{"LagBuoy", Vector3.new(8, 7, 58), Vector3.new(6, 6, 6), colors.cyan, Enum.PartType.Ball},
+	{"ServerRack", Vector3.new(58, 9, -52), Vector3.new(7, 10, 5), colors.pink, Enum.PartType.Block},
+}) do
+	local prop = tagged(props, item[1], item[3], item[2], item[4], Enum.Material.SmoothPlastic, "LowPolyProp", item[5])
+	prop.CanCollide = true
 end
-
-local spawnPad = part("SpawnPlatform", Vector3.new(18, 1, 18), Vector3.new(0, 1, 42), cyan, Enum.Material.Neon)
-local spawnLight = Instance.new("PointLight")
-spawnLight.Color = cyan
-spawnLight.Range = 24
-spawnLight.Brightness = 3
-spawnLight.Parent = spawnPad
-
-for index = 1, 10 do
-	local angle = (index / 10) * math.pi * 2
-	local x = math.cos(angle) * 62
-	local z = math.sin(angle) * 38
-	local core = part("EnergyCore" .. index, Vector3.new(3, 3, 3), Vector3.new(x, 3, z), Color3.fromRGB(255, 218, 72), Enum.Material.Neon)
-	core.Shape = Enum.PartType.Ball
-	core.CanCollide = false
-end
-
-local sign = part("WelcomeSign", Vector3.new(42, 10, 1), Vector3.new(0, 13, 48), Color3.fromRGB(20, 28, 55), Enum.Material.Neon)
-local surface = Instance.new("SurfaceGui")
-surface.Face = Enum.NormalId.Front
-surface.Parent = sign
-local label = Instance.new("TextLabel")
-label.Size = UDim2.fromScale(1, 1)
-label.BackgroundTransparency = 1
-label.Font = Enum.Font.GothamBlack
-label.Text = "GLITCH GOBLIN SIMULATOR\nABSORB  •  JUICE  •  UPGRADE"
-label.TextColor3 = Color3.fromRGB(91, 232, 255)
-label.TextScaled = true
-label.Parent = surface
 
 local lighting = game:GetService("Lighting")
-lighting.ClockTime = 0
+lighting.ClockTime = 0.2
 lighting.Brightness = 2
-lighting.Ambient = Color3.fromRGB(35, 42, 86)
-lighting.OutdoorAmbient = Color3.fromRGB(10, 14, 35)
-lighting.FogColor = Color3.fromRGB(9, 14, 35)
-lighting.FogEnd = 260
-local atmosphere = lighting:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere")
+lighting.Ambient = Color3.fromRGB(48, 52, 78)
+lighting.OutdoorAmbient = Color3.fromRGB(18, 21, 38)
+lighting.FogColor = Color3.fromRGB(18, 22, 42)
+lighting.FogEnd = 250
+local atmosphere = lighting:FindFirstChild("GoblinNeonAtmosphere") or Instance.new("Atmosphere")
 atmosphere.Name = "GoblinNeonAtmosphere"
-atmosphere.Density = 0.28
-atmosphere.Offset = 0.15
-atmosphere.Color = Color3.fromRGB(120, 150, 255)
-atmosphere.Decay = Color3.fromRGB(30, 20, 70)
-atmosphere.Glare = 0.12
-atmosphere.Haze = 1.1
+atmosphere.Density = 0.25
+atmosphere.Offset = 0.18
+atmosphere.Color = Color3.fromRGB(145, 160, 220)
+atmosphere.Decay = Color3.fromRGB(38, 30, 70)
+atmosphere.Glare = 0.08
+atmosphere.Haze = 1.2
 atmosphere.Parent = lighting
