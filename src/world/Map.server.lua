@@ -1,4 +1,5 @@
 local map = script.Parent
+local CollectionService = game:GetService("CollectionService")
 
 local function part(name, size, position, color, material)
 	local value = Instance.new("Part")
@@ -21,6 +22,86 @@ local pink = Color3.fromRGB(255, 65, 180)
 local purple = Color3.fromRGB(119, 76, 255)
 local gold = Color3.fromRGB(255, 190, 65)
 local black = Color3.fromRGB(5, 8, 20)
+
+local function folder(name)
+	local value = map:FindFirstChild(name)
+	if not value then
+		value = Instance.new("Folder")
+		value.Name = name
+		value.Parent = map
+	end
+	return value
+end
+
+local bubbleRegions = folder("BubbleSpawnRegions")
+local portals = folder("ZonePortals")
+local vats = folder("VatLocations")
+local spawns = folder("PlayerSpawns")
+local props = folder("LowPolyProps")
+
+local function taggedPart(parent, name, size, position, color, material, tag)
+	local value = part(name, size, position, color, material)
+	value.Parent = parent
+	CollectionService:AddTag(value, tag)
+	return value
+end
+
+local function zone(name, center, color, subtitle)
+	local pad = taggedPart(props, name .. "Platform", Vector3.new(34, 1, 28), center, color, Enum.Material.Slate, "ZonePlatform")
+	pad.Transparency = 0.08
+	local portal = taggedPart(portals, name .. "Portal", Vector3.new(5, 10, 2), center + Vector3.new(0, 5, 12), color, Enum.Material.Neon, "ZonePortal")
+	local light = Instance.new("PointLight")
+	light.Color = color
+	light.Range = 28
+	light.Brightness = 2
+	light.Parent = portal
+	local sign = taggedPart(props, name .. "Sign", Vector3.new(26, 5, 0.5), center + Vector3.new(0, 8, 10), Color3.fromRGB(12, 16, 34), Enum.Material.Metal, "ZoneSign")
+	local surface = Instance.new("SurfaceGui")
+	surface.Face = Enum.NormalId.Front
+	surface.AlwaysOnTop = true
+	surface.Parent = sign
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.fromScale(1, 1)
+	label.BackgroundTransparency = 1
+	label.Text = name:upper() .. "\n" .. subtitle
+	label.TextColor3 = color
+	label.TextScaled = true
+	label.Font = Enum.Font.GothamBlack
+	label.Parent = surface
+	local region = taggedPart(bubbleRegions, name .. "BubbleField", Vector3.new(28, 0.3, 20), center + Vector3.new(0, 1, -4), color, Enum.Material.Neon, "BubbleSpawnRegion")
+	region.Transparency = 0.82
+	region.CanCollide = false
+end
+
+-- Static landmarks stay separate from gameplay scripts so Studio designers can move them safely.
+local hub = taggedPart(props, "RaisedGoblinHub", Vector3.new(52, 3, 42), Vector3.new(0, 2, 0), purple, Enum.Material.Slate, "Hub")
+hub.Transparency = 0.1
+for _, path in ipairs({
+	{"GaragePath", Vector3.new(-42, 0.2, 0), Vector3.new(70, 0.25, 5), Color3.fromRGB(255, 150, 60)},
+	{"SwampPath", Vector3.new(0, 0.2, -42), Vector3.new(5, 0.25, 70), Color3.fromRGB(70, 220, 130)},
+	{"ForestPath", Vector3.new(42, 0.2, 0), Vector3.new(70, 0.25, 5), Color3.fromRGB(100, 180, 255)},
+	{"LagoonPath", Vector3.new(0, 0.2, 42), Vector3.new(5, 0.25, 70), Color3.fromRGB(60, 220, 255)},
+}) do
+	taggedPart(props, path[1], path[3], path[2], path[4], Enum.Material.Neon, "ZonePath")
+end
+zone("Goblin Garage", Vector3.new(-64, 2, 0), Color3.fromRGB(255, 150, 60), "FIX IT WITH JUICE")
+zone("Static Swamp", Vector3.new(0, 2, -55), Color3.fromRGB(70, 220, 130), "DO NOT LICK THE FOG")
+zone("Error Forest", Vector3.new(64, 2, 0), Color3.fromRGB(100, 180, 255), "TREES HAVE COMMIT RIGHTS")
+zone("Lag Lagoon", Vector3.new(0, 2, 55), Color3.fromRGB(60, 220, 255), "BUFFERING SINCE 1999")
+zone("Forbidden Server Room", Vector3.new(58, 2, -42), Color3.fromRGB(255, 80, 160), "AUTHORIZED GOBLINS ONLY")
+taggedPart(vats, "CentralJuiceVatLocation", Vector3.new(8, 0.25, 8), Vector3.new(0, 3.65, 0), pink, Enum.Material.Neon, "VatLocation")
+taggedPart(spawns, "MainPlayerSpawn", Vector3.new(12, 0.25, 12), Vector3.new(0, 4, 42), cyan, Enum.Material.Neon, "PlayerSpawn")
+
+for index, item in ipairs({
+	{"GarageCrate", Vector3.new(-70, 5, -8), Color3.fromRGB(255, 150, 60), Enum.PartType.Block},
+	{"SwampCrystal", Vector3.new(-8, 5, -55), Color3.fromRGB(70, 220, 130), Enum.PartType.Wedge},
+	{"ForestPine", Vector3.new(70, 6, 8), Color3.fromRGB(100, 180, 255), Enum.PartType.Cylinder},
+	{"LagBuoy", Vector3.new(8, 5, 58), Color3.fromRGB(60, 220, 255), Enum.PartType.Ball},
+	{"ServerRack", Vector3.new(58, 7, -52), Color3.fromRGB(255, 80, 160), Enum.PartType.Block},
+}) do
+	local prop = taggedPart(props, item[1], Vector3.new(6, 6, 6), item[2], item[3], Enum.Material.SmoothPlastic, "LowPolyProp")
+	prop.Shape = item[4]
+end
 
 local arena = part("Arena", Vector3.new(180, 2, 120), Vector3.new(0, -1, 0), dark, Enum.Material.SmoothPlastic)
 arena.Reflectance = 0.1
@@ -97,3 +178,12 @@ lighting.Ambient = Color3.fromRGB(35, 42, 86)
 lighting.OutdoorAmbient = Color3.fromRGB(10, 14, 35)
 lighting.FogColor = Color3.fromRGB(9, 14, 35)
 lighting.FogEnd = 260
+local atmosphere = lighting:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere")
+atmosphere.Name = "GoblinNeonAtmosphere"
+atmosphere.Density = 0.28
+atmosphere.Offset = 0.15
+atmosphere.Color = Color3.fromRGB(120, 150, 255)
+atmosphere.Decay = Color3.fromRGB(30, 20, 70)
+atmosphere.Glare = 0.12
+atmosphere.Haze = 1.1
+atmosphere.Parent = lighting
