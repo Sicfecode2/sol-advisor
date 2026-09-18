@@ -333,7 +333,8 @@ for index, item in ipairs({
 end
 
 local lighting = game:GetService("Lighting")
-lighting.Technology = Enum.Technology.Future
+-- Lighting.Technology is Studio-only and cannot be assigned by a published Script.
+-- Set it manually in Studio when authoring the place; runtime-safe lighting values follow.
 lighting.ClockTime = 14.5
 lighting.Brightness = 2.2
 lighting.GlobalShadows = true
