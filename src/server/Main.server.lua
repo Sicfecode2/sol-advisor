@@ -2,12 +2,15 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local MarketplaceService = game:GetService("MarketplaceService")
 local DataStoreService = game:GetService("DataStoreService")
+local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage.Shared.GameConfig)
 local profileStore
-local dataStoreReady = pcall(function()
+local dataStoreReady = false
+if not RunService:IsStudio() then
 	profileStore = DataStoreService:GetDataStore("NeonCourierProfilesV1")
-end)
+	dataStoreReady = true
+end
 
 local remotes = Instance.new("Folder")
 remotes.Name = "Remotes"
