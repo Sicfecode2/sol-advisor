@@ -62,6 +62,30 @@ local function light(parent, color, range, brightness)
 	return value
 end
 
+local function pipe(name, a, b, radius, color)
+	local delta = b - a
+	local tube = part(props, name, Vector3.new(radius, radius, delta.Magnitude), (a + b) / 2, color, Enum.Material.Metal, Enum.PartType.Cylinder)
+	tube.CFrame = CFrame.lookAt((a + b) / 2, b) * CFrame.Angles(math.pi / 2, 0, 0)
+	return tube
+end
+
+local function mushroom(name, position, color)
+	part(props, name .. "Stem", Vector3.new(1.2, 3, 1.2), position + Vector3.new(0, 1.5, 0), colors.stoneLight, Enum.Material.SmoothPlastic, Enum.PartType.Cylinder)
+	part(props, name .. "Cap", Vector3.new(4, 1.4, 4), position + Vector3.new(0, 3.2, 0), color, Enum.Material.SmoothPlastic, Enum.PartType.Ball)
+end
+
+local function bubbleCluster(name, center, color)
+	local cluster = folder("BubbleClusters")
+	local marker = tagged(cluster, name, Vector3.new(10, 0.2, 10), center, color, Enum.Material.SmoothPlastic, "BubbleCluster")
+	marker.Transparency = 0.94
+	marker.CanCollide = false
+	for index = 1, 5 do
+		local offset = Vector3.new((index - 3) * 2, 1.5 + (index % 2), ((index * 3) % 5) - 2)
+		local bubble = part(cluster, name .. "Marker" .. index, Vector3.new(1.4, 1.4, 1.4), center + offset, color, Enum.Material.SmoothPlastic, Enum.PartType.Ball)
+		bubble.CanCollide = false
+	end
+end
+
 local function sign(name, position, size, text, accent, facing)
 	local board = part(props, name, size, position, colors.ink, Enum.Material.Metal)
 	local gui = Instance.new("SurfaceGui")
@@ -192,6 +216,57 @@ local gate = part(nil, "GlitchGate", Vector3.new(4, 16, 30), Vector3.new(78, 11,
 gate.Transparency = 0.12
 sign("CaveSign", Vector3.new(75, 20, 0), Vector3.new(0.6, 8, 30), "LOCKED GLITCH CAVE\n500 JUICE TO ENTER", colors.pink, Enum.NormalId.Left)
 
+-- Layered courtyard enclosure: stepped rock, scrap retaining walls, and service pipes
+-- keep the playable footprint compact without making the horizon a flat box.
+for index, item in ipairs({
+	{"CliffNorthLow", Vector3.new(180, 10, 8), Vector3.new(0, 5, -56), colors.groundEdge},
+	{"CliffNorthHigh", Vector3.new(150, 14, 7), Vector3.new(0, 14, -62), colors.stone},
+	{"CliffWestLow", Vector3.new(8, 10, 120), Vector3.new(-86, 5, 0), colors.groundEdge},
+	{"CliffWestHigh", Vector3.new(7, 14, 100), Vector3.new(-92, 14, 0), colors.stone},
+	{"ScrapSouthWall", Vector3.new(150, 8, 5), Vector3.new(0, 4, 57), colors.metal},
+}) do
+	part(props, item[1], item[2], item[3], item[4], Enum.Material.Concrete)
+end
+for index, position in ipairs({
+	Vector3.new(-65, 17, -61), Vector3.new(-35, 20, -62), Vector3.new(35, 17, -62),
+	Vector3.new(68, 20, -61), Vector3.new(-91, 16, -36), Vector3.new(-92, 19, 28),
+}) do
+	part(props, "CliffRock" .. index, Vector3.new(12, 10, 10), position, colors.stoneLight, Enum.Material.Slate, Enum.PartType.Wedge)
+end
+pipe("NorthServicePipe", Vector3.new(-54, 9, -51), Vector3.new(-54, 17, -61), 2, colors.orange)
+pipe("NorthServicePipeRun", Vector3.new(-54, 17, -61), Vector3.new(-18, 17, -61), 2, colors.orange)
+pipe("WestServicePipe", Vector3.new(-82, 9, -35), Vector3.new(-91, 9, -35), 2, colors.mint)
+
+-- The Turbo terminal reads as a glass machine rather than a colored cube.
+part(props, "TurboMachineBase", Vector3.new(13, 2, 11), Vector3.new(27, 8, -1), colors.metal, Enum.Material.Metal)
+local turboGlass = part(props, "TurboBrainGlass", Vector3.new(8, 9, 8), Vector3.new(27, 14, -1), Color3.fromRGB(130, 190, 255), Enum.Material.Glass, Enum.PartType.Cylinder)
+turboGlass.Transparency = 0.38
+turboGlass.CanCollide = false
+local turboBrain = part(props, "TurboBrainCore", Vector3.new(4, 4, 4), Vector3.new(27, 14, -1), colors.purple, Enum.Material.SmoothPlastic, Enum.PartType.Ball)
+turboBrain.CanCollide = false
+light(turboBrain, colors.purple, 12, 1)
+pipe("TurboPipeL", Vector3.new(22, 9, -4), Vector3.new(24, 13, -1), 1, colors.cyan)
+pipe("TurboPipeR", Vector3.new(32, 9, -4), Vector3.new(30, 13, -1), 1, colors.cyan)
+sign("TurboMachineLabel", Vector3.new(27, 20, 3.2), Vector3.new(14, 3, 0.5), "TURBO BRAIN", colors.cyan)
+
+-- A short tutorial board is grounded beside the spawn platform, facing the arrival path.
+part(props, "TutorialBoardPost", Vector3.new(1, 7, 1), Vector3.new(-10, 11, 39), colors.metal, Enum.Material.Metal)
+sign("TutorialBoard", Vector3.new(-10, 15, 39), Vector3.new(16, 5, 0.6), "1 ABSORB\n2 JUICE VAT\n3 UPGRADE", colors.gold)
+
+-- Organized visual bubble fields make the collectible loop legible before the first pickup.
+bubbleCluster("GarageCluster", Vector3.new(-52, 7, 12), colors.orange)
+bubbleCluster("SwampCluster", Vector3.new(-15, 7, -39), colors.mint)
+bubbleCluster("ForestCluster", Vector3.new(52, 7, 12), colors.cyan)
+bubbleCluster("LagoonCluster", Vector3.new(15, 7, 39), colors.cyan)
+for index, item in ipairs({
+	{"SwampMushroom", Vector3.new(-12, 6, -47), colors.mint},
+	{"SwampMushroom2", Vector3.new(7, 6, -49), colors.pink},
+	{"ForestMushroom", Vector3.new(53, 6, -10), colors.cyan},
+	{"ForestMushroom2", Vector3.new(70, 6, 12), colors.orange},
+}) do
+	mushroom(item[1], item[2], item[3])
+end
+
 -- A few non-emissive props break up the horizon without making a grid.
 for _, item in ipairs({
 	{"GarageCrate", Vector3.new(-72, 8, -8), Vector3.new(7, 7, 7), colors.orange, Enum.PartType.Block},
@@ -205,8 +280,8 @@ for _, item in ipairs({
 end
 
 local lighting = game:GetService("Lighting")
-lighting.ClockTime = 0.2
-lighting.Brightness = 2
+lighting.ClockTime = 14.5
+lighting.Brightness = 2.2
 lighting.Ambient = Color3.fromRGB(48, 52, 78)
 lighting.OutdoorAmbient = Color3.fromRGB(18, 21, 38)
 lighting.FogColor = Color3.fromRGB(18, 22, 42)
@@ -220,3 +295,16 @@ atmosphere.Decay = Color3.fromRGB(38, 30, 70)
 atmosphere.Glare = 0.08
 atmosphere.Haze = 1.2
 atmosphere.Parent = lighting
+local bloom = lighting:FindFirstChild("GoblinCourtyardBloom") or Instance.new("BloomEffect")
+bloom.Name = "GoblinCourtyardBloom"
+bloom.Intensity = 0.18
+bloom.Size = 18
+bloom.Threshold = 1.2
+bloom.Parent = lighting
+local colorCorrection = lighting:FindFirstChild("GoblinCourtyardColor") or Instance.new("ColorCorrectionEffect")
+colorCorrection.Name = "GoblinCourtyardColor"
+colorCorrection.Brightness = 0.04
+colorCorrection.Contrast = 0.12
+colorCorrection.Saturation = -0.08
+colorCorrection.TintColor = Color3.fromRGB(220, 230, 255)
+colorCorrection.Parent = lighting
