@@ -4,7 +4,10 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local DataStoreService = game:GetService("DataStoreService")
 
 local Config = require(ReplicatedStorage.Shared.GameConfig)
-local profileStore = DataStoreService:GetDataStore("NeonCourierProfilesV1")
+local profileStore
+local dataStoreReady = pcall(function()
+	profileStore = DataStoreService:GetDataStore("NeonCourierProfilesV1")
+end)
 
 local remotes = Instance.new("Folder")
 remotes.Name = "Remotes"
@@ -125,11 +128,14 @@ end
 
 local function safeProfile(player)
 	local profile = { credits = Config.StartingCredits, carried = 0, delivered = 0, boostUntil = 0 }
-	local success, saved = pcall(function()
-		return profileStore:GetAsync("player_" .. player.UserId)
-	end)
-	if not success then
-		warn(string.format("Neon Courier: failed to load profile for %s", player.UserId))
+	local success, saved
+	if dataStoreReady then
+		success, saved = pcall(function()
+			return profileStore:GetAsync("player_" .. player.UserId)
+		end)
+		if not success then
+			warn(string.format("Neon Courier: failed to load profile for %s", player.UserId))
+		end
 	end
 	if success and type(saved) == "table" then
 		profile.credits = tonumber(saved.credits) or profile.credits
@@ -141,7 +147,7 @@ end
 
 local function saveProfile(player)
 	local profile = profiles[player]
-	if not profile then return end
+	if not profile or not dataStoreReady then return end
 	local success = pcall(function()
 		profileStore:UpdateAsync("player_" .. player.UserId, function(previous)
 			previous = type(previous) == "table" and previous or {}
