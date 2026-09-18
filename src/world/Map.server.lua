@@ -38,12 +38,12 @@ local vats = folder("VatLocations")
 local spawns = folder("PlayerSpawns")
 
 local colors = {
-	ground = Color3.fromRGB(20, 25, 39),
-	groundEdge = Color3.fromRGB(35, 43, 62),
-	stone = Color3.fromRGB(61, 67, 86),
-	stoneLight = Color3.fromRGB(92, 98, 116),
-	metal = Color3.fromRGB(42, 48, 63),
-	ink = Color3.fromRGB(12, 15, 26),
+	ground = Color3.fromRGB(104, 151, 73),
+	groundEdge = Color3.fromRGB(81, 108, 65),
+	stone = Color3.fromRGB(116, 103, 82),
+	stoneLight = Color3.fromRGB(157, 143, 112),
+	metal = Color3.fromRGB(76, 82, 78),
+	ink = Color3.fromRGB(40, 48, 38),
 	cyan = Color3.fromRGB(75, 210, 232),
 	mint = Color3.fromRGB(91, 206, 154),
 	gold = Color3.fromRGB(244, 183, 69),
@@ -107,11 +107,39 @@ local function sign(name, position, size, text, accent, facing)
 end
 
 -- A contained arena and a few tall silhouettes make the spawn camera read the space.
-part(nil, "Arena", Vector3.new(180, 2, 120), Vector3.new(0, -1, 0), colors.ground, Enum.Material.Slate)
-part(nil, "NorthWall", Vector3.new(180, 24, 2), Vector3.new(0, 11, -60), colors.groundEdge, Enum.Material.Concrete)
-part(nil, "SouthWall", Vector3.new(180, 24, 2), Vector3.new(0, 11, 60), colors.groundEdge, Enum.Material.Concrete)
-part(nil, "WestWall", Vector3.new(2, 24, 120), Vector3.new(-90, 11, 0), colors.groundEdge, Enum.Material.Concrete)
-part(nil, "EastWall", Vector3.new(2, 24, 120), Vector3.new(90, 11, 0), colors.groundEdge, Enum.Material.Concrete)
+part(nil, "Arena", Vector3.new(180, 2, 120), Vector3.new(0, -1, 0), colors.ground, Enum.Material.Grass)
+part(nil, "NorthWall", Vector3.new(180, 24, 2), Vector3.new(0, 11, -60), colors.groundEdge, Enum.Material.Slate)
+part(nil, "SouthWall", Vector3.new(180, 24, 2), Vector3.new(0, 11, 60), colors.groundEdge, Enum.Material.Slate)
+part(nil, "WestWall", Vector3.new(2, 24, 120), Vector3.new(-90, 11, 0), colors.groundEdge, Enum.Material.Slate)
+part(nil, "EastWall", Vector3.new(2, 24, 120), Vector3.new(90, 11, 0), colors.groundEdge, Enum.Material.Slate)
+
+-- The courtyard is the top of a small floating island. Layered wedges, roots, and
+-- narrow waterfalls sell the underside without adding a large physics-heavy mesh.
+for index, item in ipairs({
+	{"IslandDirtTop", Vector3.new(150, 8, 94), Vector3.new(0, -6, 0), Color3.fromRGB(126, 91, 54), Enum.PartType.Block},
+	{"IslandRockCore", Vector3.new(112, 20, 74), Vector3.new(0, -18, 0), Color3.fromRGB(94, 82, 70), Enum.PartType.Wedge},
+	{"IslandRockLeft", Vector3.new(46, 18, 42), Vector3.new(-48, -18, 6), Color3.fromRGB(109, 94, 75), Enum.PartType.Wedge},
+	{"IslandRockRight", Vector3.new(46, 16, 40), Vector3.new(48, -20, -5), Color3.fromRGB(83, 77, 70), Enum.PartType.Wedge},
+	{"IslandRockPoint", Vector3.new(34, 26, 30), Vector3.new(0, -31, 0), Color3.fromRGB(76, 72, 67), Enum.PartType.Wedge},
+}) do
+	part(props, item[1], item[2], item[3], item[4], Enum.Material.Ground, item[5])
+end
+for index, item in ipairs({
+	{"RootLeft", Vector3.new(-58, 2, 0), Vector3.new(-52, -17, 0), Color3.fromRGB(77, 54, 35)},
+	{"RootRight", Vector3.new(58, -1, -4), Vector3.new(52, -18, -4), Color3.fromRGB(77, 54, 35)},
+	{"RootFront", Vector3.new(0, -2, 42), Vector3.new(0, -19, 34), Color3.fromRGB(86, 58, 35)},
+}) do
+	pipe(item[1], item[2], item[3], 2.8, item[4])
+end
+for index, item in ipairs({
+	{"WaterfallLeft", Vector3.new(-62, -12, 20), Vector3.new(8, 20, 1), Color3.fromRGB(91, 186, 210)},
+	{"WaterfallFront", Vector3.new(28, -13, 48), Vector3.new(6, 24, 1), Color3.fromRGB(91, 186, 210)},
+	{"WaterfallRight", Vector3.new(67, -10, -18), Vector3.new(5, 18, 1), Color3.fromRGB(91, 186, 210)},
+}) do
+	local fall = part(props, item[1], item[3], item[2], item[4], Enum.Material.Water)
+	fall.Transparency = 0.2
+	fall.CanCollide = false
+end
 
 -- Raised circular plaza: two broad tiers and a dark inset floor give the vat a real footing.
 part(props, "HubFoundation", Vector3.new(62, 3, 48), Vector3.new(0, 2, 0), colors.stone, Enum.Material.Slate)
@@ -159,6 +187,8 @@ for _, x in ipairs({-9, 9}) do
 	part(props, "VatPipe" .. x, Vector3.new(2, 7, 2), Vector3.new(x, 11, 0), colors.metal, Enum.Material.Metal, Enum.PartType.Cylinder)
 	part(props, "VatPipeCap" .. x, Vector3.new(3, 2, 3), Vector3.new(x, 14.5, 0), colors.gold, Enum.Material.Metal, Enum.PartType.Cylinder)
 end
+part(props, "VatGauge", Vector3.new(3.5, 0.6, 3.5), Vector3.new(0, 18.2, 8.8), colors.stoneLight, Enum.Material.Metal, Enum.PartType.Cylinder)
+part(props, "VatGaugeNeedle", Vector3.new(0.25, 0.25, 1.4), Vector3.new(0, 18.6, 8.8), colors.pink, Enum.Material.Neon)
 sign("VatSign", Vector3.new(0, 22, 11), Vector3.new(30, 6, 0.6), "JUICE VAT\nSLURP YOUR BRAIN", colors.pink)
 
 -- Readable workshop massing flanks the plaza.
@@ -185,6 +215,9 @@ local function zone(name, center, accent, subtitle)
 	part(portals, name .. "PortalLintel", Vector3.new(24, 4, 4), center + Vector3.new(0, 14, postOffset.Z), colors.stoneLight, Enum.Material.Concrete)
 	local keystone = tagged(portals, name .. "Portal", Vector3.new(5, 2, 2), center + Vector3.new(0, 14, postOffset.Z), accent, Enum.Material.Neon, "ZonePortal")
 	light(keystone, accent, 16, 1.2)
+	local gate = tagged(portals, name .. "PhysicalGate", Vector3.new(2, 8, 2), center + Vector3.new(-7, 7, postOffset.Z), accent, Enum.Material.Metal, "ZonePortal")
+	local gate2 = tagged(portals, name .. "PhysicalGate2", Vector3.new(2, 8, 2), center + Vector3.new(7, 7, postOffset.Z), accent, Enum.Material.Metal, "ZonePortal")
+	pipe(name .. "GateBar", center + Vector3.new(-7, 11, postOffset.Z), center + Vector3.new(7, 11, postOffset.Z), 1.2, accent)
 	sign(name .. "Sign", center + Vector3.new(0, 19, postOffset.Z + 0.3), Vector3.new(26, 5, 0.5), name:upper() .. "\n" .. subtitle, accent)
 	local region = tagged(bubbleRegions, name .. "BubbleField", Vector3.new(28, 0.3, 20), center + Vector3.new(0, 1, -4), accent, Enum.Material.SmoothPlastic, "BubbleSpawnRegion")
 	region.Transparency = 0.88
@@ -279,32 +312,51 @@ for _, item in ipairs({
 	prop.CanCollide = true
 end
 
+-- Meadow clumps and small debris islands give the open fields a grounded,
+-- hand-placed silhouette while keeping sightlines clear for mobile players.
+for index, item in ipairs({
+	{"MeadowEast", Vector3.new(42, 7.8, 20), Vector3.new(16, 0.35, 10)},
+	{"MeadowWest", Vector3.new(-43, 7.8, 20), Vector3.new(14, 0.35, 9)},
+	{"MeadowNorth", Vector3.new(20, 7.8, -35), Vector3.new(12, 0.35, 9)},
+}) do
+	local patch = tagged(props, item[1], item[3], item[2], Color3.fromRGB(125, 176, 77), Enum.Material.Grass, "MeadowCluster")
+	patch.CanCollide = false
+end
+for index, item in ipairs({
+	{"SkyDebrisA", Vector3.new(-66, 34, -30), Vector3.new(10, 4, 7)},
+	{"SkyDebrisB", Vector3.new(72, 30, 30), Vector3.new(8, 3, 6)},
+	{"SkyRock", Vector3.new(12, 38, -72), Vector3.new(7, 5, 7)},
+}) do
+	local debris = tagged(props, item[1], item[3], item[2], colors.stoneLight, Enum.Material.Slate, "SkyProp", Enum.PartType.Wedge)
+	debris.CanCollide = false
+end
+
 local lighting = game:GetService("Lighting")
-lighting.ClockTime = 14.5
-lighting.Brightness = 2.2
-lighting.Ambient = Color3.fromRGB(48, 52, 78)
-lighting.OutdoorAmbient = Color3.fromRGB(18, 21, 38)
-lighting.FogColor = Color3.fromRGB(18, 22, 42)
-lighting.FogEnd = 250
+lighting.ClockTime = 13.5
+lighting.Brightness = 2.6
+lighting.Ambient = Color3.fromRGB(118, 125, 105)
+lighting.OutdoorAmbient = Color3.fromRGB(86, 112, 82)
+lighting.FogColor = Color3.fromRGB(183, 215, 236)
+lighting.FogEnd = 320
 local atmosphere = lighting:FindFirstChild("GoblinNeonAtmosphere") or Instance.new("Atmosphere")
 atmosphere.Name = "GoblinNeonAtmosphere"
-atmosphere.Density = 0.25
-atmosphere.Offset = 0.18
-atmosphere.Color = Color3.fromRGB(145, 160, 220)
-atmosphere.Decay = Color3.fromRGB(38, 30, 70)
-atmosphere.Glare = 0.08
-atmosphere.Haze = 1.2
+atmosphere.Density = 0.12
+atmosphere.Offset = 0.25
+atmosphere.Color = Color3.fromRGB(204, 231, 255)
+atmosphere.Decay = Color3.fromRGB(112, 142, 112)
+atmosphere.Glare = 0.03
+atmosphere.Haze = 0.55
 atmosphere.Parent = lighting
 local bloom = lighting:FindFirstChild("GoblinCourtyardBloom") or Instance.new("BloomEffect")
 bloom.Name = "GoblinCourtyardBloom"
-bloom.Intensity = 0.18
-bloom.Size = 18
-bloom.Threshold = 1.2
+bloom.Intensity = 0.1
+bloom.Size = 14
+bloom.Threshold = 1.5
 bloom.Parent = lighting
 local colorCorrection = lighting:FindFirstChild("GoblinCourtyardColor") or Instance.new("ColorCorrectionEffect")
 colorCorrection.Name = "GoblinCourtyardColor"
-colorCorrection.Brightness = 0.04
-colorCorrection.Contrast = 0.12
-colorCorrection.Saturation = -0.08
-colorCorrection.TintColor = Color3.fromRGB(220, 230, 255)
+colorCorrection.Brightness = 0.08
+colorCorrection.Contrast = 0.06
+colorCorrection.Saturation = 0.04
+colorCorrection.TintColor = Color3.fromRGB(255, 244, 218)
 colorCorrection.Parent = lighting
