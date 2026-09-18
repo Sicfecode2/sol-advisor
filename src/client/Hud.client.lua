@@ -95,7 +95,8 @@ end
 stateEvent.OnClientEvent:Connect(function(profile, endsAt)
 	roundEndsAt = endsAt or roundEndsAt
 	local boost = profile.boostUntil and profile.boostUntil > os.time() and "  |  2X BOOST" or ""
-	stats.Text = string.format("Cores: %d / %d\nCredits: %d%s", profile.carried, Config.CoreGoal, profile.credits, boost)
+	local turbo = profile.upgradeUntil and profile.upgradeUntil > os.time() and "  |  TURBO BRAIN" or ""
+	stats.Text = string.format("Bubbles: %d / %d\nJuice: %d%s%s", profile.carried, Config.CoreGoal, profile.credits, boost, turbo)
 end)
 
 toastEvent.OnClientEvent:Connect(function(message, color)
@@ -110,7 +111,7 @@ end)
 task.spawn(function()
 	while true do
 		local remaining = math.max(0, roundEndsAt - os.time())
-		timer.Text = string.format("RUN TIME  %02d:%02d  •  Deliver at the pink reactor", math.floor(remaining / 60), remaining % 60)
+			timer.Text = string.format("GOBLIN RUN  %02d:%02d  •  Juice bubbles at the pink vat", math.floor(remaining / 60), remaining % 60)
 		task.wait(1)
 	end
 end)

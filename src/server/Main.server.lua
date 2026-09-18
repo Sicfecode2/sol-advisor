@@ -68,23 +68,46 @@ local function buildMap()
 	local reactor = createPart("Reactor", Vector3.new(20, 8, 20), Vector3.new(0, 4, 0), Color3.fromRGB(255, 65, 180), Enum.Material.Neon)
 	reactor.Parent = map
 	local prompt = Instance.new("ProximityPrompt")
-	prompt.ActionText = "Deliver cores"
-	prompt.ObjectText = "Central reactor"
+	prompt.ActionText = "Dump bubbles"
+	prompt.ObjectText = "Goblin Juice Vat"
 	prompt.HoldDuration = 0.35
 	prompt.MaxActivationDistance = 14
 	prompt.Parent = reactor
 	prompt.Triggered:Connect(function(player)
 		local profile = profiles[player]
 		if not profile or profile.carried <= 0 then
-			toastEvent:FireClient(player, "Collect energy cores first.", Color3.fromRGB(255, 180, 120))
+			toastEvent:FireClient(player, "Collect Brain Bubbles first!", Color3.fromRGB(255, 180, 120))
 			return
 		end
 		local delivered = profile.carried
 		profile.carried = 0
 		profile.delivered += delivered
-		profile.credits += delivered * Config.CoreValue * (profile.boostUntil > os.time() and Config.BoostMultiplier or 1)
+		local multiplier = profile.boostUntil > os.time() and Config.BoostMultiplier or 1
+		multiplier *= profile.upgradeUntil > os.time() and Config.UpgradeMultiplier or 1
+		profile.credits += delivered * Config.CoreValue * multiplier
 		roundScores[player] = (roundScores[player] or 0) + delivered
-		toastEvent:FireClient(player, string.format("+%d cores delivered!", delivered), Color3.fromRGB(100, 255, 190))
+		toastEvent:FireClient(player, string.format("+%d Brain Bubbles juiced!", delivered), Color3.fromRGB(100, 255, 190))
+		stateEvent:FireClient(player, profile)
+	end)
+
+	local upgrade = createPart("UpgradeTerminal", Vector3.new(7, 7, 7), Vector3.new(28, 3.5, 0), Color3.fromRGB(119, 76, 255), Enum.Material.Neon)
+	upgrade.Parent = map
+	local upgradePrompt = Instance.new("ProximityPrompt")
+	upgradePrompt.ActionText = string.format("Buy Turbo Brain (%d Juice)", Config.UpgradeCost)
+	upgradePrompt.ObjectText = "Goblin Upgrade Terminal"
+	upgradePrompt.HoldDuration = 0.5
+	upgradePrompt.MaxActivationDistance = 12
+	upgradePrompt.Parent = upgrade
+	upgradePrompt.Triggered:Connect(function(player)
+		local profile = profiles[player]
+		if not profile then return end
+		if profile.credits < Config.UpgradeCost then
+			toastEvent:FireClient(player, string.format("Need %d more Juice.", Config.UpgradeCost - profile.credits), Color3.fromRGB(255, 150, 120))
+			return
+		end
+		profile.credits -= Config.UpgradeCost
+		profile.upgradeUntil = os.time() + Config.UpgradeDurationSeconds
+		toastEvent:FireClient(player, "TURBO BRAIN activated for 5 minutes!", Color3.fromRGB(200, 150, 255))
 		stateEvent:FireClient(player, profile)
 	end)
 
@@ -104,8 +127,8 @@ local function buildMap()
 		core.CanCollide = false
 		core.Parent = map
 		local corePrompt = Instance.new("ProximityPrompt")
-		corePrompt.ActionText = "Pick up"
-		corePrompt.ObjectText = "Energy core"
+		corePrompt.ActionText = "Absorb"
+		corePrompt.ObjectText = "Brain Bubble"
 		corePrompt.HoldDuration = 0.15
 		corePrompt.MaxActivationDistance = 10
 		corePrompt.Parent = core
@@ -130,7 +153,7 @@ local function buildMap()
 end
 
 local function safeProfile(player)
-	local profile = { credits = Config.StartingCredits, carried = 0, delivered = 0, boostUntil = 0 }
+	local profile = { credits = Config.StartingCredits, carried = 0, delivered = 0, boostUntil = 0, upgradeUntil = 0 }
 	local success, saved
 	if dataStoreReady then
 		success, saved = pcall(function()
@@ -171,7 +194,7 @@ local function beginRound()
 		profile.delivered = 0
 		roundScores[player] = 0
 		stateEvent:FireClient(player, profile, roundEndsAt)
-		toastEvent:FireClient(player, "New delivery run! Bring cores to the reactor.", Color3.fromRGB(100, 220, 255))
+		toastEvent:FireClient(player, "New goblin run! Absorb bubbles, then juice them.", Color3.fromRGB(100, 220, 255))
 	end
 end
 
