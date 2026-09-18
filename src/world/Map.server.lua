@@ -87,7 +87,16 @@ local function bubbleCluster(name, center, color)
 end
 
 local function sign(name, position, size, text, accent, facing)
-	local board = part(props, name, size, position, colors.ink, Enum.Material.Metal)
+	local boardSize = Vector3.new(size.X, math.min(size.Y, 3), size.Z)
+	local boardPosition = Vector3.new(position.X, math.min(position.Y, 11.5), position.Z)
+	local board = part(props, name, boardSize, boardPosition, colors.ink, Enum.Material.Metal)
+	local postHeight = math.max(1, boardPosition.Y - boardSize.Y / 2 - 7.8)
+	local postY = 7.8 + postHeight / 2
+	local postOffset = math.max(1.5, math.min(5, boardSize.X * 0.28))
+	for index, offset in ipairs({-postOffset, postOffset}) do
+		part(props, name .. "Support" .. index, Vector3.new(0.55, postHeight, 0.55),
+			Vector3.new(boardPosition.X + offset, postY, boardPosition.Z), colors.metal, Enum.Material.Metal)
+	end
 	local gui = Instance.new("SurfaceGui")
 	gui.Face = facing or Enum.NormalId.Front
 	gui.AlwaysOnTop = true
@@ -108,10 +117,6 @@ end
 
 -- A contained arena and a few tall silhouettes make the spawn camera read the space.
 part(nil, "Arena", Vector3.new(180, 2, 120), Vector3.new(0, -1, 0), colors.ground, Enum.Material.Grass)
-part(nil, "NorthWall", Vector3.new(180, 24, 2), Vector3.new(0, 11, -60), colors.groundEdge, Enum.Material.Slate)
-part(nil, "SouthWall", Vector3.new(180, 24, 2), Vector3.new(0, 11, 60), colors.groundEdge, Enum.Material.Slate)
-part(nil, "WestWall", Vector3.new(2, 24, 120), Vector3.new(-90, 11, 0), colors.groundEdge, Enum.Material.Slate)
-part(nil, "EastWall", Vector3.new(2, 24, 120), Vector3.new(90, 11, 0), colors.groundEdge, Enum.Material.Slate)
 
 -- The courtyard is the top of a small floating island. Layered wedges, roots, and
 -- narrow waterfalls sell the underside without adding a large physics-heavy mesh.
@@ -171,25 +176,25 @@ end
 
 -- The central vat is intentionally layered: pedestal, bowl, thick rim, liquid, bubbles and pipes.
 part(props, "VatPedestal", Vector3.new(20, 2, 20), Vector3.new(0, 8.4, 0), colors.metal, Enum.Material.Metal, Enum.PartType.Cylinder)
-part(nil, "Reactor", Vector3.new(17, 6, 17), Vector3.new(0, 12, 0), colors.pink, Enum.Material.SmoothPlastic, Enum.PartType.Cylinder)
-part(props, "VatRim", Vector3.new(20, 1.4, 20), Vector3.new(0, 15.1, 0), colors.gold, Enum.Material.Metal, Enum.PartType.Cylinder)
-local liquid = part(props, "VatLiquid", Vector3.new(16, 0.35, 16), Vector3.new(0, 15.85, 0), colors.pink, Enum.Material.Neon, Enum.PartType.Cylinder)
+part(nil, "Reactor", Vector3.new(17, 10, 17), Vector3.new(0, 14, 0), colors.pink, Enum.Material.SmoothPlastic, Enum.PartType.Cylinder)
+part(props, "VatRim", Vector3.new(20, 1.4, 20), Vector3.new(0, 19.1, 0), colors.gold, Enum.Material.Metal, Enum.PartType.Cylinder)
+local liquid = part(props, "VatLiquid", Vector3.new(16, 0.35, 16), Vector3.new(0, 19.85, 0), colors.pink, Enum.Material.Neon, Enum.PartType.Cylinder)
 light(liquid, colors.pink, 18, 1.2)
-tagged(vats, "CentralJuiceVatLocation", Vector3.new(8, 0.25, 8), Vector3.new(0, 16, 0), colors.pink, Enum.Material.SmoothPlastic, "VatLocation")
+tagged(vats, "CentralJuiceVatLocation", Vector3.new(8, 0.25, 8), Vector3.new(0, 20, 0), colors.pink, Enum.Material.SmoothPlastic, "VatLocation")
 for index, position in ipairs({
-	Vector3.new(-4, 16.5, -2), Vector3.new(3, 16.6, 2), Vector3.new(0, 17.2, -4),
-	Vector3.new(5, 16.4, -4), Vector3.new(-2, 16.7, 4),
+	Vector3.new(-4, 20.5, -2), Vector3.new(3, 20.6, 2), Vector3.new(0, 21.2, -4),
+	Vector3.new(5, 20.4, -4), Vector3.new(-2, 20.7, 4),
 }) do
 	local bubble = part(props, "VatBubble" .. index, Vector3.new(1.4, 1.4, 1.4), position, colors.gold, Enum.Material.Neon, Enum.PartType.Ball)
 	bubble.CanCollide = false
 end
 for _, x in ipairs({-9, 9}) do
-	part(props, "VatPipe" .. x, Vector3.new(2, 7, 2), Vector3.new(x, 11, 0), colors.metal, Enum.Material.Metal, Enum.PartType.Cylinder)
-	part(props, "VatPipeCap" .. x, Vector3.new(3, 2, 3), Vector3.new(x, 14.5, 0), colors.gold, Enum.Material.Metal, Enum.PartType.Cylinder)
+	part(props, "VatPipe" .. x, Vector3.new(2, 11, 2), Vector3.new(x, 13, 0), colors.metal, Enum.Material.Metal, Enum.PartType.Cylinder)
+	part(props, "VatPipeCap" .. x, Vector3.new(3, 2, 3), Vector3.new(x, 18.5, 0), colors.gold, Enum.Material.Metal, Enum.PartType.Cylinder)
 end
-part(props, "VatGauge", Vector3.new(3.5, 0.6, 3.5), Vector3.new(0, 18.2, 8.8), colors.stoneLight, Enum.Material.Metal, Enum.PartType.Cylinder)
-part(props, "VatGaugeNeedle", Vector3.new(0.25, 0.25, 1.4), Vector3.new(0, 18.6, 8.8), colors.pink, Enum.Material.Neon)
-sign("VatSign", Vector3.new(0, 22, 11), Vector3.new(30, 6, 0.6), "JUICE VAT\nSLURP YOUR BRAIN", colors.pink)
+part(props, "VatGauge", Vector3.new(3.5, 0.6, 3.5), Vector3.new(0, 22.2, 8.8), colors.stoneLight, Enum.Material.Metal, Enum.PartType.Cylinder)
+part(props, "VatGaugeNeedle", Vector3.new(0.25, 0.25, 1.4), Vector3.new(0, 22.6, 8.8), colors.pink, Enum.Material.Neon)
+sign("VatSign", Vector3.new(0, 10.8, 13), Vector3.new(30, 3, 0.6), "JUICE VAT\nSLURP YOUR BRAIN", colors.pink)
 
 -- Readable workshop massing flanks the plaza.
 local function workshop(name, center, accent, title)
@@ -214,7 +219,6 @@ local function zone(name, center, accent, subtitle)
 	end
 	part(portals, name .. "PortalLintel", Vector3.new(24, 4, 4), center + Vector3.new(0, 14, postOffset.Z), colors.stoneLight, Enum.Material.Concrete)
 	local keystone = tagged(portals, name .. "Portal", Vector3.new(5, 2, 2), center + Vector3.new(0, 14, postOffset.Z), accent, Enum.Material.Neon, "ZonePortal")
-	light(keystone, accent, 16, 1.2)
 	local gate = tagged(portals, name .. "PhysicalGate", Vector3.new(2, 8, 2), center + Vector3.new(-7, 7, postOffset.Z), accent, Enum.Material.Metal, "ZonePortal")
 	local gate2 = tagged(portals, name .. "PhysicalGate2", Vector3.new(2, 8, 2), center + Vector3.new(7, 7, postOffset.Z), accent, Enum.Material.Metal, "ZonePortal")
 	pipe(name .. "GateBar", center + Vector3.new(-7, 11, postOffset.Z), center + Vector3.new(7, 11, postOffset.Z), 1.2, accent)
@@ -234,9 +238,8 @@ for index, position in ipairs({
 	Vector3.new(-76, 10, -47), Vector3.new(76, 10, -47),
 	Vector3.new(-76, 10, 47), Vector3.new(76, 10, 47),
 }) do
-	local tower = part(nil, "Beacon" .. index, Vector3.new(6, 20, 6), position, colors.stoneLight, Enum.Material.Concrete)
+	part(nil, "Beacon" .. index, Vector3.new(6, 20, 6), position, colors.stoneLight, Enum.Material.Concrete)
 	part(nil, "BeaconCap" .. index, Vector3.new(8, 1.5, 8), position + Vector3.new(0, 10.8, 0), index % 2 == 0 and colors.cyan or colors.purple, Enum.Material.Neon, Enum.PartType.Cylinder)
-	light(tower, index % 2 == 0 and colors.cyan or colors.purple, 22, 1.4)
 end
 
 local spawnPad = tagged(spawns, "MainPlayerSpawn", Vector3.new(14, 1, 14), Vector3.new(0, 8, 39), colors.cyan, Enum.Material.Metal, "PlayerSpawn")
@@ -253,9 +256,7 @@ sign("CaveSign", Vector3.new(75, 20, 0), Vector3.new(0.6, 8, 30), "LOCKED GLITCH
 -- keep the playable footprint compact without making the horizon a flat box.
 for index, item in ipairs({
 	{"CliffNorthLow", Vector3.new(180, 10, 8), Vector3.new(0, 5, -56), colors.groundEdge},
-	{"CliffNorthHigh", Vector3.new(150, 14, 7), Vector3.new(0, 14, -62), colors.stone},
 	{"CliffWestLow", Vector3.new(8, 10, 120), Vector3.new(-86, 5, 0), colors.groundEdge},
-	{"CliffWestHigh", Vector3.new(7, 14, 100), Vector3.new(-92, 14, 0), colors.stone},
 	{"ScrapSouthWall", Vector3.new(150, 8, 5), Vector3.new(0, 4, 57), colors.metal},
 }) do
 	part(props, item[1], item[2], item[3], item[4], Enum.Material.Concrete)
@@ -332,31 +333,43 @@ for index, item in ipairs({
 end
 
 local lighting = game:GetService("Lighting")
-lighting.ClockTime = 13.5
-lighting.Brightness = 2.6
-lighting.Ambient = Color3.fromRGB(118, 125, 105)
-lighting.OutdoorAmbient = Color3.fromRGB(86, 112, 82)
-lighting.FogColor = Color3.fromRGB(183, 215, 236)
-lighting.FogEnd = 320
+lighting.Technology = Enum.Technology.Future
+lighting.ClockTime = 14.5
+lighting.Brightness = 2.2
+lighting.GlobalShadows = true
+lighting.Ambient = Color3.fromRGB(75, 85, 100)
+lighting.OutdoorAmbient = Color3.fromRGB(130, 140, 150)
+lighting.ExposureCompensation = 0.1
+lighting.FogColor = Color3.fromRGB(205, 226, 238)
+lighting.FogEnd = 1500
 local atmosphere = lighting:FindFirstChild("GoblinNeonAtmosphere") or Instance.new("Atmosphere")
 atmosphere.Name = "GoblinNeonAtmosphere"
-atmosphere.Density = 0.12
-atmosphere.Offset = 0.25
-atmosphere.Color = Color3.fromRGB(204, 231, 255)
-atmosphere.Decay = Color3.fromRGB(112, 142, 112)
-atmosphere.Glare = 0.03
-atmosphere.Haze = 0.55
+atmosphere.Density = 0.18
+atmosphere.Offset = 0.1
+atmosphere.Height = 1500
+atmosphere.Color = Color3.fromRGB(190, 220, 235)
+atmosphere.Decay = Color3.fromRGB(190, 220, 235)
+atmosphere.Glare = 0
+atmosphere.Haze = 3
 atmosphere.Parent = lighting
 local bloom = lighting:FindFirstChild("GoblinCourtyardBloom") or Instance.new("BloomEffect")
 bloom.Name = "GoblinCourtyardBloom"
-bloom.Intensity = 0.1
-bloom.Size = 14
+bloom.Intensity = 0.4
+bloom.Size = 24
 bloom.Threshold = 1.5
 bloom.Parent = lighting
 local colorCorrection = lighting:FindFirstChild("GoblinCourtyardColor") or Instance.new("ColorCorrectionEffect")
 colorCorrection.Name = "GoblinCourtyardColor"
-colorCorrection.Brightness = 0.08
-colorCorrection.Contrast = 0.06
-colorCorrection.Saturation = 0.04
-colorCorrection.TintColor = Color3.fromRGB(255, 244, 218)
+colorCorrection.Brightness = 0
+colorCorrection.Contrast = 0.12
+colorCorrection.Saturation = 0.15
+colorCorrection.TintColor = Color3.fromRGB(255, 255, 255)
 colorCorrection.Parent = lighting
+local sunRays = lighting:FindFirstChild("GoblinSunRays") or Instance.new("SunRaysEffect")
+sunRays.Name = "GoblinSunRays"
+sunRays.Intensity = 0.1
+sunRays.Parent = lighting
+local depthOfField = lighting:FindFirstChildOfClass("DepthOfFieldEffect")
+if depthOfField then
+	depthOfField.Enabled = false
+end
